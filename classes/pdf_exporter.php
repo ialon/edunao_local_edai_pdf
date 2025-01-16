@@ -36,6 +36,9 @@ use Exception;
 use TCPDF;
 
 class pdf_exporter {
+    private const COVER_TITLE_COLOR = [0, 0, 145]; // RGB array for #000091
+    private const COVER_SEPARATOR_COLOR = [87, 87, 87]; // RGB array for #575757
+    private const COVER_AUTHORING_COLOR = [0, 0, 0]; // RGB array for #000000
     private const SECTION_TITLE_COLOR = [46, 134, 193]; // RGB array for #2E86C1
     private const MODULE_TITLE_COLOR = [93, 173, 226];  // RGB array for #5DADE2
     private const FONT_FAMILY = 'helvetica';
@@ -109,7 +112,10 @@ class pdf_exporter {
 
         // Remove default header and footer.
         $this->tcpdf->setPrintHeader(false);
-        $this->tcpdf->setPrintFooter(true);
+        $this->tcpdf->setPrintFooter(false);
+
+        // Start counting pages from zero.
+        $this->tcpdf->setStartingPageNumber(0);
     }
 
     /**
@@ -122,8 +128,17 @@ class pdf_exporter {
         // Add a page.
         $this->tcpdf->AddPage();
 
+        // Add Background Image.
+        // $this->add_background_image();
+
         // Add Course Title.
         $this->add_course_title();
+
+        // Add Authoring Data.
+        $this->add_authoring_data();
+
+        // Add Course Enrolment QR Code
+        $this->add_enrolment_qr();
 
         // Bookmark for the course.
         $this->tcpdf->Bookmark($this->course->fullname, 0, 0, '', 'B', array(0,0,0));
@@ -162,6 +177,9 @@ class pdf_exporter {
 
             // Start each section on a new page.
             $this->tcpdf->AddPage();
+
+            // Enable page footer for the rest of the pages.
+            $this->tcpdf->setPrintFooter(true);
 
             // Add Section Title with numbering.
             $this->add_section_title($section, $sectionnumber);
@@ -232,40 +250,117 @@ class pdf_exporter {
     }
 
     /**
+     * Adds a background image to the PDF.
+     */
+    private function add_background_image(): void {
+        // Disable AutoPageBreak
+        $this->tcpdf->SetAutoPageBreak(false, 0);
+
+        // Print background image
+        $width = $this->tcpdf->getPageWidth();
+        $height = $this->tcpdf->getPageHeight();
+        $imgurl = "https://marketplace.canva.com/EAGVTVfRE_I/1/0/1131w/canva-bue-and-white-watercolor-background-document-a4-0ziHZDR-m-Y.jpg";
+        $this->tcpdf->Image($imgurl, 0, 0, $width, $height, '', '', '', false, 300, '', false, false, 0);
+                
+        // Reset the starting point for the page content
+        $this->tcpdf->setPageMark();
+
+        // Reset AutoPageBreak.
+        $this->tcpdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+    }
+
+    /**
      * Adds the course title and logo to the PDF.
      */
     private function add_course_title(): void {
         // Logo URL.
         $logopath = $this->get_plugin_logo_url();
 
-        // Add the image to the PDF.
-        $this->tcpdf->Image($logopath, 15, 10, 30);
+        // Add the Logo image to the PDF cover page.
+        $this->tcpdf->Image($logopath, 90, 40, '', 30, 'PNG', '', 'T', false, 300, 'C', false, false, 0, false, false, false);
 
-        // Add "EDUNAO" text under the logo in blue.
-        $this->tcpdf->SetXY(15, 30);
-        $this->tcpdf->SetFont(self::FONT_FAMILY, 'B', 16); // Increased font size and made bold
-        $this->tcpdf->SetTextColor(...self::SECTION_TITLE_COLOR);
-        $this->tcpdf->Cell(30, 10, 'EDUNAO', 0, 1, 'C');
+        // Adjust the position for the course title.
+        $this->tcpdf->SetY(90 + self::CONTENT_MARGIN_TOP); // Added margin
+
+        // Add Course Title.
+        $this->tcpdf->SetFont(self::FONT_FAMILY, 'B', self::TITLE_FONT_SIZE);
+        $this->tcpdf->SetTextColor(...self::COVER_TITLE_COLOR);
+        $this->tcpdf->MultiCell(0, 0, $this->course->fullname, 0, 'C', 0, 1);
+
+        // Add a horizontal line.
+        $this->tcpdf->Ln(5); // Line break.
+        $this->tcpdf->SetDrawColor(...self::COVER_SEPARATOR_COLOR);
+        $this->tcpdf->SetLineWidth(0.5);
+        $this->tcpdf->Line(20, $this->tcpdf->GetY(), 190, $this->tcpdf->GetY());
 
         // Reset the text color to black (default) for other content.
         $this->tcpdf->SetTextColor(0, 0, 0);
 
-        // Adjust the position for the course title.
-        $this->tcpdf->SetY(40 + self::CONTENT_MARGIN_TOP); // Added margin
-
-        // Add Course Title
-        $this->tcpdf->SetFont(self::FONT_FAMILY, 'B', self::TITLE_FONT_SIZE);
-        $this->tcpdf->SetTextColor(...self::SECTION_TITLE_COLOR);
-        $this->tcpdf->Cell(0, 0, $this->course->fullname, 0, 1, 'C', 0, '', 0, false, 'T', 'M');
-
-        // Add a horizontal line
-        $this->tcpdf->Ln(5); // Line break
-        $this->tcpdf->SetDrawColor(0, 0, 0);
-        $this->tcpdf->SetLineWidth(0.5);
-        $this->tcpdf->Line(20, $this->tcpdf->GetY(), 190, $this->tcpdf->GetY());
-
-        // Add some vertical space
+        // Add some vertical space.
         $this->tcpdf->Ln(10);
+    }
+
+    /**
+     * Adds the course author and date of export data to the cover page of the PDF.
+     */
+    private function add_authoring_data(): void {
+        global $DB, $USER;
+
+        // Get the course context.
+        $context = \context_course::instance($this->course->id);
+
+        // Get the 'editingteacher' role ID.
+        $role = $DB->get_record('role', ['shortname' => 'editingteacher']);
+
+        // Get all users with the 'editingteacher' role in this course context.
+        $teachers = \get_role_users($role->id, $context, false, 'ra.id AS roleid, u.*', 'ra.id ASC');
+
+        // Set position and styling for teacher's full name.
+        $this->tcpdf->SetXY(15, 150);
+        $this->tcpdf->SetFont(self::FONT_FAMILY, 'B', 16);
+        $this->tcpdf->SetTextColor(...self::COVER_AUTHORING_COLOR);
+
+        // Add the teacher's full name under horizontal line.
+        $author = !empty($teachers) ? fullname(reset($teachers)) : fullname($USER);
+        $publisher = get_string('publishedbywith', 'local_edai_pdf', ['authorname' => $author, 'sitename' => get_site()->fullname]);
+        $this->tcpdf->Cell(0, 10, $publisher, 0, 1, 'C');
+
+        // Set position and styling for export date.
+        $this->tcpdf->SetXY(15, 160);
+        $this->tcpdf->SetFont(self::FONT_FAMILY, 'R', 14);
+        $exportdate = userdate(time(), get_string('strftimedaydate', 'langconfig'));
+
+        // Add the export date under the teacher's full name.
+        $this->tcpdf->Cell(0, 10, $exportdate, 0, false, 'C', 0, '', 0, false, 'T', 'M');
+
+        // Reset the text color to black (default) for other content.
+        $this->tcpdf->SetTextColor(0, 0, 0);
+
+        // Add some vertical space.
+        $this->tcpdf->Ln(10);
+    }
+
+    /**
+     * Adds a QR code for Course Enrolment.
+     */
+    private function add_enrolment_qr(): void {
+        Global $CFG;
+
+        /// Get the course enrollment URL.
+        $enrolurl = $CFG->wwwroot . '/enrol/index.php?id=' . $this->course->id;
+
+        // Set position and styling for text above QR Code.
+        $this->tcpdf->SetFont(self::FONT_FAMILY, 'R', 12);
+        $this->tcpdf->SetXY(15, 205);
+
+        //Add Text above QR Code.
+        $this->tcpdf->Cell(0, 10, get_string('scantoenrol', 'local_edai_pdf'), 0, false, 'C', 0, '', 0, false, 'T', 'M');
+
+        // Add the Enrolment QR Code.
+        $this->tcpdf->write2DBarcode($enrolurl, 'QRCODE', 90, 220, 25, 25, null, '');
+
+        // Reset the text color to black (default) for other content.
+        $this->tcpdf->SetTextColor(0, 0, 0);
     }
 
     /**
@@ -390,7 +485,9 @@ class pdf_exporter {
      */
     private function get_plugin_logo_url(): string {
         global $CFG;
-        return $CFG->wwwroot . '/local/edai/img/logo_edunao.png'; // Changed to wwwroot for correct URL
+        // return "https://123.edunao.com//local/edai/img/logo_edunao.png";
+        // return $CFG->wwwroot . '/local/edai/img/logo_edunao.png'; // Changed to wwwroot for correct URL
+        return "https://clients.edunao.com/pluginfile.php/1/core_admin/logo/0x200/1736996412/Logo%20Edunao%20%2B%20signature%20couleur_RVB.png";
     }
 
 }

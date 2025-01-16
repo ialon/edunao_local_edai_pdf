@@ -25,3 +25,5 @@
  */
 
 $string['pluginname'] = 'Edunao AI manager';
+$string['publishedbywith'] = 'Published by {$a->authorname} with {$a->sitename}';
+$string['scantoenrol'] = 'Scan to enrol';
