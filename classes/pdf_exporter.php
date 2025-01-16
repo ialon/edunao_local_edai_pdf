@@ -43,9 +43,9 @@ class pdf_exporter {
     private const MODULE_TITLE_COLOR = [93, 173, 226];  // RGB array for #5DADE2
     private const FONT_FAMILY = 'helvetica';
     private const FONT_SIZE = 12;
-    private const TITLE_FONT_SIZE = 20;
-    private const SECTION_FONT_SIZE = 16;
-    private const MODULE_FONT_SIZE = 14;
+    private const TITLE_FONT_SIZE = 25;
+    private const SECTION_FONT_SIZE = 22;
+    private const MODULE_FONT_SIZE = 16;
     private const CONTENT_MARGIN_TOP = 10; // in mm
     private const INDENTATION = 10; // in mm
     private moodle_database $db;
@@ -197,13 +197,9 @@ class pdf_exporter {
             foreach ($supportedmodules as $cm) {
                 $module = $this->db->get_record('modules', ['id' => $cm->module], '*', MUST_EXIST);
                 $moduleinstance = $this->modulefactory->create($module->name);
+
                 // Fetch the module instance.
                 $cminstance = $this->db->get_record($module->name, ['id' => $cm->instance], '*', MUST_EXIST);
-
-                // Start each module on a new page (except first one that stays with section page).
-                if ($modulenumber !== 1) {
-                    $this->tcpdf->AddPage();
-                }
 
                 // Add Module Title with numbering.
                 $this->add_module_title($cm, $cminstance, $sectionnumber, $modulenumber);
@@ -395,8 +391,6 @@ class pdf_exporter {
         $this->tcpdf->SetFont(self::FONT_FAMILY, 'B', self::MODULE_FONT_SIZE);
         // Set color for module title
         $this->tcpdf->SetTextColor(...self::MODULE_TITLE_COLOR);
-        // Add indentation
-        $this->tcpdf->SetX(20 + self::INDENTATION);
         // Add module title
         $this->tcpdf->Cell(0, 0, $sectionnumber . '.' . $modulenumber . ' ' . $cminstance->name, 0, 1, 'L', 0, '', 0, false, 'T', 'M');
         // Reset text color to black
@@ -411,8 +405,6 @@ class pdf_exporter {
      * @param string $modulehtml The HTML content of the module.
      */
     private function add_module_content(string $modulehtml): void {
-        // Indent the content
-        $this->tcpdf->SetX(20 + self::INDENTATION);
         // Set font for content
         $this->tcpdf->SetFont(self::FONT_FAMILY, '', self::FONT_SIZE);
         // Write HTML content
@@ -434,14 +426,12 @@ class pdf_exporter {
         // Process the intro based on its format.
         $formattedintro = format_text($cminstance->intro, $introformat, ['context' => \context_module::instance($cmid)]);
 
-        // Indent the intro.
-        $this->tcpdf->SetX(20 + self::INDENTATION);
         // Set font for intro.
         $this->tcpdf->SetFont(self::FONT_FAMILY, 'I', self::FONT_SIZE);
         // Write the formatted intro.
         $this->tcpdf->writeHTMLCell(0, 0, '', '', $formattedintro, 0, 1, false, true, 'L', true);
         // Add spacing after intro.
-        $this->tcpdf->Ln(5);
+        $this->tcpdf->Ln(3);
     }
 
     /**
