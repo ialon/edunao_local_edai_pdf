@@ -276,13 +276,13 @@ class pdf_exporter {
      */
     private function add_course_title(): void {
         // Logo URL.
-        $logopath = $this->get_plugin_logo_url();
+        $logopath = $this->get_site_logo_url();
 
         // Add the Logo image to the PDF cover page.
-        $this->tcpdf->Image($logopath, 90, 40, '', 30, 'PNG', '', 'T', false, 300, 'C', false, false, 0, false, false, false);
+        $this->tcpdf->Image($logopath, 90, 20, '', 30, 'PNG', '', 'T', false, 300, 'C', false, false, 0, false, false, false);
 
         // Adjust the position for the course title.
-        $this->tcpdf->SetY(90 + self::CONTENT_MARGIN_TOP); // Added margin
+        $this->tcpdf->SetY(60 + self::CONTENT_MARGIN_TOP); // Added margin
 
         // Add Course Title.
         $this->tcpdf->SetFont(self::FONT_FAMILY, 'B', self::TITLE_FONT_SIZE);
@@ -315,20 +315,27 @@ class pdf_exporter {
         $role = $DB->get_record('role', ['shortname' => 'editingteacher']);
 
         // Get all users with the 'editingteacher' role in this course context.
-        $teachers = \get_role_users($role->id, $context, false, 'ra.id AS roleid, u.*', 'ra.id ASC');
+        $teachers = \get_role_users($role->id, $context);
 
         // Set position and styling for teacher's full name.
-        $this->tcpdf->SetXY(15, 150);
         $this->tcpdf->SetFont(self::FONT_FAMILY, 'B', 16);
         $this->tcpdf->SetTextColor(...self::COVER_AUTHORING_COLOR);
 
+        // Add some vertical space.
+        $this->tcpdf->Ln(20);
+
         // Add the teacher's full name under horizontal line.
-        $author = !empty($teachers) ? fullname(reset($teachers)) : fullname($USER);
-        $publisher = get_string('publishedbywith', 'local_edai_pdf', ['authorname' => $author, 'sitename' => get_site()->fullname]);
-        $this->tcpdf->Cell(0, 10, $publisher, 0, 1, 'C');
+        $publishedby = get_string('publishedby', 'local_edai_pdf');
+        $this->tcpdf->Cell(0, 10, $publishedby, 0, 1, 'C');
+
+        foreach ($teachers as $teacher) {
+            $this->tcpdf->Cell(0, 10, fullname($teacher), 0, 1, 'C');
+            // Add some vertical space.
+            $this->tcpdf->Ln(-2);
+        }
 
         // Set position and styling for export date.
-        $this->tcpdf->SetXY(15, 160);
+        $this->tcpdf->Ln(20);
         $this->tcpdf->SetFont(self::FONT_FAMILY, 'R', 14);
         $exportdate = userdate(time(), get_string('strftimedaydate', 'langconfig'));
 
@@ -339,7 +346,7 @@ class pdf_exporter {
         $this->tcpdf->SetTextColor(0, 0, 0);
 
         // Add some vertical space.
-        $this->tcpdf->Ln(10);
+        $this->tcpdf->Ln(40);
     }
 
     /**
@@ -353,13 +360,15 @@ class pdf_exporter {
 
         // Set position and styling for text above QR Code.
         $this->tcpdf->SetFont(self::FONT_FAMILY, 'R', 12);
-        $this->tcpdf->SetXY(15, 205);
 
-        //Add Text above QR Code.
+        // Add Text above QR Code.
         $this->tcpdf->Cell(0, 10, get_string('scantoenrol', 'local_edai_pdf'), 0, false, 'C', 0, '', 0, false, 'T', 'M');
 
+        // Get the last Y position and add to it
+        $newyposition = $this->tcpdf->GetY() + 10;
+
         // Add the Enrolment QR Code.
-        $this->tcpdf->write2DBarcode($enrolurl, 'QRCODE', 90, 220, 25, 25, null, '');
+        $this->tcpdf->write2DBarcode($enrolurl, 'QRCODE', '93', $newyposition, 25, 25, null, 'C');
 
         // Reset the text color to black (default) for other content.
         $this->tcpdf->SetTextColor(0, 0, 0);
@@ -479,11 +488,9 @@ class pdf_exporter {
      *
      * @return string The URL to the logo image.
      */
-    private function get_plugin_logo_url(): string {
-        global $CFG;
-        // return "https://123.edunao.com//local/edai/img/logo_edunao.png";
-        // return $CFG->wwwroot . '/local/edai/img/logo_edunao.png'; // Changed to wwwroot for correct URL
-        return "https://clients.edunao.com/pluginfile.php/1/core_admin/logo/0x200/1736996412/Logo%20Edunao%20%2B%20signature%20couleur_RVB.png";
+    private function get_site_logo_url(): string {
+        global $OUTPUT;
+        return $OUTPUT->get_logo_url();
     }
 
 }
