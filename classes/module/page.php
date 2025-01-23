@@ -69,6 +69,9 @@ class page extends module_base {
         $page = $db->get_record('page', ['id' => $cm->instance], '*', MUST_EXIST);
         $context = \context_module::instance($cm->id);
 
+        // Rewrite pluginfile URLs.
+        $page->content = file_rewrite_pluginfile_urls($page->content, 'pluginfile.php', $context->id, 'mod_page', 'content', $page->revision);
+
         // Format content using Moodle's format_text with filters.
         $content = format_text($page->content, $page->contentformat, [
             'context' => $context,

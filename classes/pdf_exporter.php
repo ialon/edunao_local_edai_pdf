@@ -287,7 +287,7 @@ class pdf_exporter {
         // Add Course Title.
         $this->tcpdf->SetFont(self::FONT_FAMILY, 'B', self::TITLE_FONT_SIZE);
         $this->tcpdf->SetTextColor(...self::COVER_TITLE_COLOR);
-        $this->tcpdf->MultiCell(0, 0, $this->course->fullname, 0, 'C', 0, 1);
+        $this->tcpdf->MultiCell(0, 0, $this->course->fullname ?? '', 0, 'C', 0, 1);
 
         // Add a horizontal line.
         $this->tcpdf->Ln(5); // Line break.
@@ -386,7 +386,7 @@ class pdf_exporter {
         // Set color for section title
         $this->tcpdf->SetTextColor(...self::SECTION_TITLE_COLOR);
         // Add section title
-        $this->tcpdf->MultiCell(0, 0, $section->name, 0, 'L', 0, 1);
+        $this->tcpdf->MultiCell(0, 0, $section->name ?? '', 0, 'L', 0, 1);
         // Reset text color to black
         $this->tcpdf->SetTextColor(0, 0, 0);
         // Add spacing after section title
@@ -407,7 +407,7 @@ class pdf_exporter {
         // Set color for module title
         $this->tcpdf->SetTextColor(...self::MODULE_TITLE_COLOR);
         // Add module title
-        $this->tcpdf->MultiCell(0, 0, $cminstance->name, 0, 'L', 0, 1);
+        $this->tcpdf->MultiCell(0, 0, $cminstance->name ?? '', 0, 'L', 0, 1);
         // Reset text color to black
         $this->tcpdf->SetTextColor(0, 0, 0);
         // Add spacing after module title
