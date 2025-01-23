@@ -202,7 +202,10 @@ class pdf_exporter {
                 $cminstance = $this->db->get_record($module->name, ['id' => $cm->instance], '*', MUST_EXIST);
 
                 // Add Module Title with numbering.
+                // Commented out temporarily
+                /*
                 $this->add_module_title($cm, $cminstance, $sectionnumber, $modulenumber);
+                */
 
                 // Bookmark for the module with numbering.
                 $this->tcpdf->Bookmark(
@@ -215,9 +218,12 @@ class pdf_exporter {
                 );
 
                 // Add Module intro if exists.
+                // Commented out temporarily
+                /*
                 if (!empty($cminstance->intro)) {
                     $this->add_module_intro($cminstance, $cm->id);
                 }
+                */
 
                 // Add Module Content.
                 $modulehtml = $moduleinstance->export_to_pdf($this->db, $cm);
@@ -363,15 +369,15 @@ class pdf_exporter {
      * Adds the section title to the PDF with numbering.
      *
      * @param object $section The course section record.
-     * @param int $section_number The current section number.
+     * @param int $sectionnumber The current section number.
      */
-    private function add_section_title(object $section, int $section_number): void {
+    private function add_section_title(object $section, int $sectionnumber): void {
         // Set font for section title
         $this->tcpdf->SetFont(self::FONT_FAMILY, 'B', self::SECTION_FONT_SIZE);
         // Set color for section title
         $this->tcpdf->SetTextColor(...self::SECTION_TITLE_COLOR);
         // Add section title
-        $this->tcpdf->Cell(0, 0, $section_number . '. ' . $section->name, 0, 1, 'L', 0, '', 0, false, 'T', 'M');
+        $this->tcpdf->MultiCell(0, 0, $section->name, 0, 'L', 0, 1);
         // Reset text color to black
         $this->tcpdf->SetTextColor(0, 0, 0);
         // Add spacing after section title
@@ -392,7 +398,7 @@ class pdf_exporter {
         // Set color for module title
         $this->tcpdf->SetTextColor(...self::MODULE_TITLE_COLOR);
         // Add module title
-        $this->tcpdf->Cell(0, 0, $sectionnumber . '.' . $modulenumber . ' ' . $cminstance->name, 0, 1, 'L', 0, '', 0, false, 'T', 'M');
+        $this->tcpdf->MultiCell(0, 0, $cminstance->name, 0, 'L', 0, 1);
         // Reset text color to black
         $this->tcpdf->SetTextColor(0, 0, 0);
         // Add spacing after module title
@@ -447,7 +453,7 @@ class pdf_exporter {
         $formattedsummary = format_text($section->summary, $summaryformat, ['context' => \context_course::instance($this->courseid)]);
 
         // Set font for summary.
-        $this->tcpdf->SetFont(self::FONT_FAMILY, 'I', self::FONT_SIZE);
+        $this->tcpdf->SetFont(self::FONT_FAMILY, 'R', self::FONT_SIZE);
         // Write the formatted summary.
         $this->tcpdf->writeHTMLCell(0, 0, '', '', $formattedsummary, 0, 1, false, true, 'L', true);
         // Reset text color to black if changed.
