@@ -100,6 +100,36 @@ class page extends module_base {
             }
         }
 
+        // Function to recursively fix em and rem units.
+        function fixRelativeUnits(\DOMNode $node, int $rootsize, int $fontsize) {
+            if ($node->hasAttributes() && $styleNode = $node->attributes->getNamedItem('style')) {
+                $style = $styleNode->nodeValue;
+
+                // Fix rem units
+                $style = preg_replace_callback('/(\d*\.?\d+)rem/', function ($matches) use ($rootsize) {
+                    return ((int) $matches[1] * $rootsize) . 'px';
+                }, $style);
+
+                // Fix em units
+                $style = preg_replace_callback('/(\d*\.?\d+)em/', function ($matches) use (&$fontsize) {
+                    $fontsize = ((int) $matches[1] * $fontsize);
+                    return $fontsize . 'px';
+                }, $style);
+
+                if ($styleNode->nodeValue !== $style) {
+                    $node->setAttribute('style', $style);
+                }
+            }
+
+            // Recursively iterate through child nodes
+            foreach ($node->childNodes as $child) {
+                fixRelativeUnits($child, $rootsize,$fontsize);
+            }
+        }
+
+        $rootsize = 15; // In px
+        fixRelativeUnits($dom, $rootsize, $rootsize);
+
         // Save the cleaned off of script tags HTML to avoid brut text formulas display inside PDF.
         $cleanedcontent = $dom->saveHTML();
 
