@@ -112,22 +112,29 @@ class page extends module_base {
 
     // Function to recursively fix em and rem units.
     public function fixRelativeUnits(\DOMNode $node, int $rootsize, int $fontsize) {
-        if ($node->hasAttributes() && $styleNode = $node->attributes->getNamedItem('style')) {
-            $style = $styleNode->nodeValue;
+        if ($node->hasAttributes()) {
+            // Attributes to match.
+            $attributes = ['style', 'height', 'width'];
 
-            // Fix rem units
-            $style = preg_replace_callback('/(\d*\.?\d+)rem/', function ($matches) use ($rootsize) {
-                return ((int) $matches[1] * $rootsize) . 'px';
-            }, $style);
+            foreach ($attributes as $attribute) {
+                if ($item = $node->attributes->getNamedItem($attribute)) {
+                    $value = $item->nodeValue;
 
-            // Fix em units
-            $style = preg_replace_callback('/(\d*\.?\d+)em/', function ($matches) use (&$fontsize) {
-                $fontsize = ((int) $matches[1] * $fontsize);
-                return $fontsize . 'px';
-            }, $style);
+                    // Fix rem units.
+                    $newvalue = preg_replace_callback('/(\d*\.?\d+)rem/', function ($matches) use ($rootsize) {
+                        return ((int) $matches[1] * $rootsize) . 'px';
+                    }, $value);
 
-            if ($styleNode->nodeValue !== $style) {
-                $node->setAttribute('style', $style);
+                    // Fix em units.
+                    $newvalue = preg_replace_callback('/(\d*\.?\d+)em/', function ($matches) use (&$fontsize) {
+                        $fontsize = ((int) $matches[1] * $fontsize);
+                        return $fontsize . 'px';
+                    }, $newvalue);
+
+                    if ($value !== $newvalue) {
+                        $node->setAttribute($attribute, $newvalue);
+                    }
+                }
             }
         }
 
@@ -186,9 +193,8 @@ class page extends module_base {
                 // Prepare image
                 $src = $CFG->wwwroot . '/local/edai_pdf/pix/emoji/emoji_u' . $unicode . '.svg';
                 $attrs = [
-                    'class' => 'img-fluid align-top',
-                    'width' => 20,
-                    'height' => 20
+                    'width' => '1.35em',
+                    'height' => '1.35em'
                 ];
                 $image = \html_writer::img($src, '', $attrs);
             }
