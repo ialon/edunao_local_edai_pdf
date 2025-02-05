@@ -73,7 +73,14 @@ class page extends module_base {
         $page->content = $this->replace_emoji_with_images($page->content);
 
         // Rewrite pluginfile URLs.
-        $page->content = file_rewrite_pluginfile_urls($page->content, 'pluginfile.php', $context->id, 'mod_page', 'content', $page->revision);
+        $page->content = file_rewrite_pluginfile_urls(
+            $page->content,
+            'pluginfile.php',
+            $context->id,
+            'local_edai_pdf',
+            'mod_page_content', // The real component_filearea
+            $page->revision
+        );
 
         // Format content using Moodle's format_text with filters.
         $content = format_text($page->content, $page->contentformat, [
