@@ -199,8 +199,9 @@ class page extends module_base {
                 $image = \html_writer::img($src, '', $attrs);
             }
 
-            // Replace emoji with image
-            $content = str_replace($emoji, $image, $content);
+            // Replace emoji with image. Keep white space before emoji or add an invisible character.
+            $content = str_replace(' ' . $emoji, ' ' . $image, $content);
+            $content = str_replace($emoji, '&#12288;' . $image, $content);
         }
 
         return $content;
