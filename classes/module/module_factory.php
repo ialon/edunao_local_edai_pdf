@@ -45,7 +45,6 @@ class module_factory {
             'page' => new page(),
             'simplequiz' => new simplequiz(),
             'glossary' => new glossary(),
-            'slideshow' => new slideshow(),
             default => throw new \InvalidArgumentException("Unsupported module type: {$type}"),
         };
     }
@@ -60,7 +59,6 @@ class module_factory {
             'page' => new page(),
             'simplequiz' => new simplequiz(),
             'glossary' => new glossary(),
-            'slideshow' => new slideshow(),
         ];
     }
 }
