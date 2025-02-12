@@ -174,7 +174,6 @@ class pdf_exporter {
                 }
 
                 // Optionally add a module title header.
-                $this->add_module_title($cm, $cminstance, $sectionnumber, $modulenumber);
                 $modulehtml = $moduleinstance->export_to_pdf($this->db, $cm);
                 $this->add_module_content($modulehtml);
                 $modulenumber++;
