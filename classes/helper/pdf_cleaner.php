@@ -102,35 +102,33 @@ class pdf_cleaner {
      * @param int $rootsize Base size for rem conversion.
      * @param int $fontsize Base size for em conversion.
      */
-    public function fix_relative_units(\DOMNode $node, int $rootsize, int $fontsize): void {
-        if (!$node->hasAttributes()) {
-            return;
-        }
-
-        // Attributes to match.
-        $attributes = ['style', 'height', 'width'];
-        foreach ($attributes as $attribute) {
-            $item = $node->attributes->getNamedItem($attribute);
-            if (!$item) {
-                continue;
-            }
-
-            $value = $item->nodeValue;
-            // Fix rem units.
-            $newvalue = preg_replace_callback('/(\d*\.?\d+)rem/', function ($matches) use ($rootsize) {
-                return ((int) $matches[1] * $rootsize) . 'px';
-            }, $value);
-            // Fix em units.
-            $newvalue = preg_replace_callback('/(\d*\.?\d+)em/', function ($matches) use (&$fontsize) {
-                $fontsize = ((int) $matches[1] * $fontsize);
-                return $fontsize . 'px';
-            }, $newvalue);
-
-            if ($value !== $newvalue) {
-                $node->setAttribute($attribute, $newvalue);
+    public function fix_relative_units(\DOMNode &$node, int $rootsize, int $fontsize): void {
+        if ($node->hasAttributes()) {
+            // Attributes to match.
+            $attributes = ['style', 'height', 'width'];
+            foreach ($attributes as $attribute) {
+                $item = $node->attributes->getNamedItem($attribute);
+                if (!$item) {
+                    continue;
+                }
+    
+                $value = $item->nodeValue;
+                // Fix rem units.
+                $newvalue = preg_replace_callback('/(\d*\.?\d+)rem/', function ($matches) use ($rootsize) {
+                    return ((int) $matches[1] * $rootsize) . 'px';
+                }, $value);
+                // Fix em units.
+                $newvalue = preg_replace_callback('/(\d*\.?\d+)em/', function ($matches) use (&$fontsize) {
+                    $fontsize = ((int) $matches[1] * $fontsize);
+                    return $fontsize . 'px';
+                }, $newvalue);
+    
+                if ($value !== $newvalue) {
+                    $node->setAttribute($attribute, $newvalue);
+                }
             }
         }
-
+    
         // Recursively iterate through child nodes
         foreach ($node->childNodes as $child) {
             $this->fix_relative_units($child, $rootsize,$fontsize);
