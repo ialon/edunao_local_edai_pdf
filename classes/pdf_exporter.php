@@ -317,7 +317,7 @@ class pdf_exporter {
     private function add_module_intro(object $cminstance, int $cmid): void {
         $introformat = property_exists($cminstance, 'introformat') ? $cminstance->introformat : FORMAT_HTML;
         $formattedintro = format_text($cminstance->intro, $introformat, ['context' => \context_module::instance($cmid)]);
-        $this->tcpdf->SetFont(self::FONT_FAMILY, 'I', self::FONT_SIZE);
+        $this->tcpdf->SetFont(self::FONT_FAMILY, 'R', self::FONT_SIZE);
         $this->tcpdf->writeHTMLCell(0, 0, '', '', $formattedintro, 0, 1, false, true, 'L', true);
         $this->tcpdf->Ln(3);
     }
