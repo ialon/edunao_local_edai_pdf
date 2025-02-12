@@ -29,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Serves files for PDF export.
  *
- * @package  local_edai_pdf
+ * @package  local_course_exporter
  * @category files
  * @param stdClass $course course object
  * @param stdClass $cm course module object
@@ -40,13 +40,9 @@ defined('MOODLE_INTERNAL') || die();
  * @param array $options additional options affecting the file serving
  * @return bool false if file not found, does not return if found - just send the file
  */
-function local_edai_pdf_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
+function local_course_exporter_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
     global $CFG;
     require_once("$CFG->libdir/resourcelib.php");
-
-    if (!has_capability('moodle/course:manageactivities', $context)) {
-        return false;
-    }
 
     // We need to extract the real component and filearea from the $filearea
     // If the real filearea contains an underscore, this code will not work
