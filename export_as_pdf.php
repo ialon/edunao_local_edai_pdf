@@ -18,8 +18,8 @@
 /**
  *
  *
- * @package    local_edai_pdf
- * @copyright  2024 Edunao SAS (contact@edunao.com)
+ * @package    local_course_exporter
+ * @copyright  2025 Edunao SAS (contact@edunao.com)
  * @author     Pierre FACQ <pierre.facq@edunao.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -38,29 +38,27 @@ require_capability('moodle/course:manageactivities', $context);
 
 // Initialize the $PAGE global object.
 $PAGE->set_context($context);
-$PAGE->set_url(new moodle_url('/local/edai/export_course_pdf.php', ['id' => $courseid]));
+$PAGE->set_url(new moodle_url('/local/course_exporter/export_as_pdf.php', ['courseid' => $courseid]));
 
-// Check user capabilities.
-require_capability('moodle/course:manageactivities', $context);
-// Initialize necessary classes.
-$contextmanager = new \local_edai_pdf\context_manager($DB);
-$pdfexporter    = new \local_edai_pdf\pdf_exporter($DB, $courseid);
+// Purge Moodle and browser's cache.
+purge_all_caches();
 
-// Generate PDF.
 try {
+    // Generate PDF.
+    $pdfexporter = new \local_course_exporter\pdf_exporter($DB, $courseid);
     $filepath = $pdfexporter->generate_pdf();
-
     // Send the PDF to the browser for download.
     send_file(
         $filepath,
-        'course_' . $courseid . '.pdf',
+        time() . '_course_' . $courseid . '.pdf',
         null,
         0,
         false,
         false,
-        ''
+        '',
+        false,
+        ['nocache' => true],
     );
-
 } catch (Exception $e) {
     // Handle errors gracefully.
     echo $OUTPUT->header();

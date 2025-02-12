@@ -26,8 +26,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_course_exporter';
-$plugin->version = 2025020500;
-$plugin->requires = 2022112800;
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'v1.0.0';
+$string['pluginname'] = 'Course Exporter';
+$string['publishedby'] = 'Published by';
+$string['scantoenrol'] = 'Scan to enrol';

@@ -18,12 +18,14 @@
 /**
  *
  *
- * @package    local_edai_pdf
- * @copyright  2024 Edunao SAS (contact@edunao.com)
+ * @package    local_course_exporter
+ * @copyright  2025 Edunao SAS (contact@edunao.com)
  * @author     Pierre FACQ <pierre.facq@edunao.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Gestionnaire Edunao AI';
-$string['publishedby'] = 'Publié par';
-$string['scantoenrol'] = 'Scannez pour vous inscrire';
+defined('MOODLE_INTERNAL') || die();
+
+$string['pluginname'] = 'Course Exporter';
+$string['publishedby'] = 'Publicado por';
+$string['scantoenrol'] = 'Escanear para inscribirse';

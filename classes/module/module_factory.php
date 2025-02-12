@@ -18,43 +18,50 @@
 /**
  *
  *
- * @package    local_edai_pdf
- * @copyright  2024 Edunao SAS (contact@edunao.com)
+ * @package    local_course_exporter
+ * @copyright  2025 Edunao SAS (contact@edunao.com)
  * @author     Pierre FACQ <pierre.facq@edunao.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edai_pdf\module;
+namespace local_course_exporter\module;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Factory to create module instances based on module type.
+ */
 class module_factory {
+
     /**
-     * Creates an instance of a module based on the given module type.
+     * Create an instance of a module.
      *
-     * @param string $type The type of module to create (e.g., 'page', 'simplequiz', 'multichoice', 'truefalse', ...).
-     * @return module_base An instance of a module class.
+     * @param string $type
+     * @return module_interface
      * @throws \InvalidArgumentException If the module type is not supported.
      */
-    public function create(string $type): module_base {
+    public function create(string $type): module_interface {
         return match (strtolower($type)) {
             'page' => new page(),
+            'simplequiz' => new simplequiz(),
             'glossary' => new glossary(),
+            'slideshow' => new slideshow(),
             default => throw new \InvalidArgumentException("Unsupported module type: {$type}"),
         };
     }
 
     /**
-     * Retrieves all supported modules and their instances.
+     * Return an array of supported module instances.
      *
-     * @return array Associative array with module types as keys and module instances as values.
+     * @return module_interface[]
      */
     public function get_supported_modules(): array {
-        $supported = [
+        return [
             'page' => new page(),
+            'simplequiz' => new simplequiz(),
             'glossary' => new glossary(),
+            'slideshow' => new slideshow(),
         ];
-
-        return $supported;
     }
 }
+

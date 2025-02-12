@@ -18,34 +18,64 @@
 /**
  *
  *
- * @package    local_edai_pdf
- * @copyright  2024 Edunao SAS (contact@edunao.com)
+ * @package    local_course_exporter
+ * @copyright  2025 Edunao SAS (contact@edunao.com)
  * @author     Pierre FACQ <pierre.facq@edunao.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edai_pdf;
+namespace local_course_exporter;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/lib/tcpdf/tcpdf.php');
 
+
+/**
+ * Custom TCPDF class to override footer and possibly other default behaviors.
+ */
 class custom_tcpdf extends \TCPDF {
+
+    /**
+     * Custom footer.
+     */
     public function Footer() {
-        // Position at 15 mm from the bottom.
         $this->SetY(-15);
-        // Set font.
         $this->SetFont('helvetica', 'I', 8);
-        // Page number.
+        // Right-align page number.
         $this->Cell(0, 10, $this->getAliasNumPage(), 0, 0, 'R');
     }
 
-    // Override the Image() method
-    public function Image($file, $x='', $y='', $w=0, $h=0, $type='', $link='',
-                          $align='', $resize=false, $dpi=300, $palign='',
-                          $ismask=false, $imgmask=false, $border=0, $fitbox=false,
-                          $hidden=false, $fitonpage=false, $alt=false, $altimgs=array()) {
-        // Ensure alt text is not included
+    /**
+     * Override Image() to remove alternate text.
+     *
+     * @param string $file
+     * @param mixed $x
+     * @param mixed $y
+     * @param mixed $w
+     * @param mixed $h
+     * @param string $type
+     * @param string $link
+     * @param string $align
+     * @param bool $resize
+     * @param int $dpi
+     * @param string $palign
+     * @param bool $ismask
+     * @param bool $imgmask
+     * @param mixed $border
+     * @param mixed $fitbox
+     * @param bool $hidden
+     * @param bool $fitonpage
+     * @param bool $alt
+     * @param array $altimgs
+     */
+    public function Image(
+        $file, $x = '', $y = '', $w = 0, $h = 0, $type = '',
+        $link = '', $align = '', $resize = false, $dpi = 300, $palign = '',
+        $ismask = false, $imgmask = false, $border = 0, $fitbox = false,
+        $hidden = false, $fitonpage = false, $alt = false, $altimgs = array()
+    ) {
+        // Force alt to "false" to prevent extra markup.
         $alt = false;
         parent::Image($file, $x, $y, $w, $h, $type, $link, $align, $resize, $dpi,
             $palign, $ismask, $imgmask, $border, $fitbox, $hidden,

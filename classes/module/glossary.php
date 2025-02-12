@@ -18,46 +18,31 @@
 /**
  *
  *
- * @package    local_edai_pdf
- * @copyright  2024 Edunao SAS (contact@edunao.com)
+ * @package    local_course_exporter
+ * @copyright  2025 Edunao SAS (contact@edunao.com)
  * @author     Pierre FACQ <pierre.facq@edunao.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_edai_pdf\module;
+namespace local_course_exporter\module;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/mod/glossary/lib.php');
 
-class glossary extends module_base {
+/**
+ * Class to export a glossary module to PDF.
+ */
+class glossary implements module_interface {
 
-    protected function get_identifier() : string {
-        return 'glossary';
-    }
-
-    protected function get_module_name() : string {
-        return 'glossary';
-    }
-
-    public function get_context(\moodle_database $db, object $cm): string {
-        $glossary = $db->get_record('glossary', ['id' => $cm->instance], '*', MUST_EXIST);
-        $entries = $db->get_records('glossary_entries', ['glossaryid' => $glossary->id]);
-
-        $context = "Custom Module Information:\n";
-        $context .= "- Name: {$glossary->name}\n";
-        $context .= "- Intro: {$glossary->intro}\n";
-        $context .= "- Number of Entries: " . count($entries) . "\n\n";
-
-        foreach ($entries as $entry) {
-            $context .= "Entry:\n";
-            $context .= "- Concept: {$entry->concept}\n";
-            $context .= "- Definition: {$entry->definition}\n";
-            $context .= "\n";
-        }
-        return $context;
-    }
-
+    /**
+     * Export glossary entries to PDF–compatible HTML.
+     *
+     * @param \moodle_database $db
+     * @param object $cm
+     * @return string
+     * @throws \dml_exception
+     */
     public function export_to_pdf(\moodle_database $db, object $cm): string {
         $entries = $db->get_records('glossary_entries', ['glossaryid' => $cm->instance], 'concept ASC');
 
