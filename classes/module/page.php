@@ -50,6 +50,9 @@ class page implements module_interface {
         // Emoji replacement.
         $page->content = $pdfcleaner->replace_emoji_with_images($page->content);
 
+        // Replace math characters with TeX.
+        $page->content = $pdfcleaner->replace_math_characters_with_tex($page->content);
+
         // Rewrite pluginfile URLs.
         $page->content = file_rewrite_pluginfile_urls(
             $page->content,
