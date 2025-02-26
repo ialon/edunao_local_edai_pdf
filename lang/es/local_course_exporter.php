@@ -26,6 +26,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Course Exporter';
+$string['pluginname'] = 'Exportador de Cursos';
 $string['publishedby'] = 'Publicado por';
 $string['scantoenrol'] = 'Escanear para inscribirse';
